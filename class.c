@@ -7,7 +7,8 @@ typedef struct student {
     char prenom[20];
     int age;
     int ID;
-    char date[20];
+    long int date;
+    float notes[40];
     struct student *next;
 } etudiant;
 
@@ -39,7 +40,7 @@ etudiant* insert(etudiant* lstptr, int nb) {
     printf("Entrez leur âge: ");
     scanf("%d", &ptr->age);  // Attention : il faut passer l'adresse de ptr->age avec &
     ptr->ID = nb;
-    time(ptr->date);
+    time(&ptr->date);
 
     ptr->next = lstptr;  // Insérer le nouvel étudiant au début de la liste
     return ptr;  // Retourner le nouvel élément en tête de liste
@@ -106,10 +107,17 @@ etudiant* recup_list() {
 int main() {
     etudiant* ptr = NULL;  // Initialiser la liste à NULL
     ptr  = recup_list();
+    int debut;
+    if (ptr == NULL){
+        debut = 0;
+    }
+    else{
+        debut = ptr->ID;
+    }
     // Insérer 5 étudiants dans la liste
     for (int i = 0; i < 3; i++) {
-        
-        ptr = insert(ptr,1);  // Insérer un nouvel étudiant dans la liste
+        debut++;
+        ptr = insert(ptr,debut);  // Insérer un nouvel étudiant dans la liste
          // Afficher la liste après chaque insertion
         
     }

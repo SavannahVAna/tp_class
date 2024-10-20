@@ -67,7 +67,7 @@ void affiche_student(etudiant* ed) {
 
 void modiify_student(etudiant* ptr){
     affiche_student(ptr);
-    printf("que voulez vous modifier?\n1 : nom\n2 : prénom\n3 : age\n4 : notes\n5 : status\n6 : langues\n");
+    printf("\nque voulez vous modifier?\n1 : nom\n2 : prénom\n3 : age\n4 : notes\n5 : status\n6 : langues\n");
     int h;
     char a;
     int y;
@@ -139,7 +139,7 @@ etudiant* insert(etudiant* lstptr, int nb) {
     printf("Entrez leur prénom: ");
     scanf("%s", ptr->prenom);
     printf("Entrez leur âge: ");
-    scanf("%d", &ptr->age);  // Attention : il faut passer l'adresse de ptr->age avec &
+    scanf("%d", &ptr->age);
     ptr->ID = nb;
     time(&ptr->date);
     time(&ptr->last_modif);
@@ -178,7 +178,7 @@ void free_list(etudiant* head) {
 
 etudiant* select_student(etudiant* head, int index){
     //pas oublier faire une copie du pointeur avant de le passer a la focntion select
-    while (head != NULL || head->ID != index){
+    while (head != NULL && head->ID != index){
         head = head->next;
     }
     return head;
@@ -216,21 +216,46 @@ etudiant* recup_list() {
         }
 
         // Copier les informations lues dans le nouvel étudiant
-        *new_node = temp;  // Copier le contenu de temp dans new_node
-        new_node->next = NULL;  // Le nouvel étudiant pointe sur NULL pour le moment
+        *new_node = temp;  
+        new_node->next = NULL;  
 
         // Si la liste est vide, ce nouvel étudiant devient la tête
         if (head == NULL) {
             head = new_node;
         } else {
-            prev->next = new_node;  // Sinon, relier le nœud précédent au nouveau
+            prev->next = new_node;  
         }
 
-        prev = new_node;  // Mettre à jour prev pour le prochain tour
+        prev = new_node;  
     }
 
     fclose(fp);
-    return head;  // Retourner la tête de la liste remplie
+    return head; 
+}
+
+void affiche_moyenne(etudiant* st){
+    float moyenne = 0;
+    for(int i = 0; i < st->notesnb; i++)
+    {
+        moyenne += st->notes[i];
+    }
+    printf("%f\n", moyenne/st->notesnb);
+}
+
+void affiche_classe_moyenne(etudiant* st){
+    float moyenne = 0;
+    int nbrecord = 0;
+    etudiant* tmp = st;
+    while (tmp != NULL) {
+        nbrecord += tmp->notesnb;
+        for (int i = 0; i < tmp->notesnb; i++)
+        {
+            moyenne += tmp->notes[i];
+        }
+        
+        tmp = tmp->next;
+    }
+    printf("%f\n", moyenne/nbrecord);
 }
 
 int main() {
@@ -247,8 +272,9 @@ int main() {
     int y = 1;
     char t;
     int s;
+    int z;
     while(y){
-        printf("\nMenu principal :\nq to quit\na to add a student\nd to display the students list\nm to modify a student\n");
+        printf("\nMenu principal :\nq to quit\na to add a student\nd to display the students list\nm to modify a student\nv to get the average of a student or the class\n");
         scanf(" %c",&t);
         switch (t)
         {
@@ -265,7 +291,7 @@ int main() {
         case 'm':
             affiche_list(ptr);
             printf("\nselect the student number you wish to modify\n");
-            scanf(" %d",&s);
+            scanf("%d",&s);
             ptr2 = ptr;
             ptr2 = select_student(ptr2, s);
             if(ptr2 == NULL){
@@ -274,7 +300,25 @@ int main() {
             else{
                 modiify_student(ptr2);
             }
-        
+        case 'v':
+            printf("voulez vous la moyenne d'un student (1) ou de la classe(2)\n");
+            scanf("%d",&z);
+            if (z==1){
+                affiche_list(ptr);
+                printf("\nselect the student number\n");
+                scanf("%d",&s);
+                ptr2 = ptr;
+                ptr2 = select_student(ptr2, s);
+                if(ptr2 == NULL){
+                    printf("le numéro que vous avez rentré n'existe pas\n");
+                }
+                else{
+                    affiche_moyenne(ptr2);
+                }
+            }
+            if(z==2){
+                affiche_classe_moyenne(ptr);
+            }
         }
     }
     // Insérer 5 étudiants dans la liste
@@ -288,5 +332,5 @@ int main() {
     // Libérer la mémoire allouée pour la liste
     free_list(ptr);
 
-    return 0;  // Retourner 0 pour indiquer que le programme s'est terminé correctement
+    return 0;  
 }

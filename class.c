@@ -10,6 +10,7 @@ typedef struct student {
     long int date;
     long int last_modif;
     float notes[40];
+    int notesnb;
     unsigned int status; // bit 1 : inscrit, bit 2 : en atente, bit 3 : dipome, bit 4 : suspendu 
     unsigned int languages; // bit 1 : Anglais, bit 2 : francais, bit 3 : allemend, bit 4 : espagnol, bit 5 : italien, bit 6 : latin, bit 7 : grec, bit 8 : russe
     struct student *next;
@@ -42,31 +43,74 @@ void affiche_student(etudiant* ed) {
     }
     strftime(date_str, 100, "%d/%m/%Y %H:%M:%S", local_time);
     strftime(date_str2, 100, "%d/%m/%Y %H:%M:%S", local_time2);
-    printf("Student :\nNom : %s\nPrénom : %s\nÂge : %d\nID : %d\nDate de création : %s\nDerniere modif : %s\n", ed->nom, ed->prenom, ed->age,ed->ID,date_str,date_str2);
+    printf("Student :\nNom : %s\nPrénom : %s\nÂge : %d\nID : %d\nDate de création : %s\nDerniere modif : %s\nNotes :", ed->nom, ed->prenom, ed->age,ed->ID,date_str,date_str2);
+    for (int i = 0 ; i<ed->notesnb; i++){
+        printf(" %f ", ed->notes[i]);
+    }
+    char stat[4][10] = {"inscrit", "en attente", "diplome", "suspendu"};
+    char langue[8][10] = {"anglais", "francais", "allemand", "espagnol", "italien", "latin", "grec", "russe"};
+    printf("\nstatut :");
+    for (int i = 0 ; i<4 ; i++){
+        if (is_bit_set(ed->status,i)){
+            printf(" %s ", stat[i]);
+        }
+    }
+    printf("\nlangues :");
+    for (int i = 0 ; i<8 ; i++){
+        if (is_bit_set(ed->languages,i)){
+            printf(" %s ", langue[i]);
+        }
+    }
     free(date_str);
     free(date_str2);
 }
 
 void modiify_student(etudiant* ptr){
     affiche_student(ptr);
-    printf("que voulez vous modifier?\n1 : nom\n2 : prénom\n3 : age\n");
+    printf("que voulez vous modifier?\n1 : nom\n2 : prénom\n3 : age\n4 : notes\n5 : status\n6 : langues\n");
     int h;
+    char a;
+    int y;
     scanf(" %d", &h);
     switch (h)
     {
     case 1:
-        printf("entrez le nouveau nom de l'étudiant");
+        printf("entrez le nouveau nom de l'étudiant\n");
         scanf("%s", ptr->nom);
         break;
     case 2:
-        printf("entrez le nouveau prénom de l'étudiant");
+        printf("entrez le nouveau prénom de l'étudiant\n");
         scanf("%s", ptr->prenom);
         break;
     case 3 :
-        printf("entrez le nouvel age de l'étudiant");
+        printf("entrez le nouvel age de l'étudiant\n");
         scanf("%d", &ptr->age);
         break;
-    default:
+    case 4:
+        printf("souhaitez vous ajouter une note (a) ou modifier une note existante (m)\n");
+        scanf(" %c", &a);
+        if(a == 'a'){
+            printf("entrez la note\n");
+            scanf("%f", &ptr->notes[ptr->notesnb]);
+            ptr->notesnb++;
+        }
+        else if (a == 'm')
+        {
+            printf("selectionnez le numero de la note a modifier (a partir de 0)\n");
+            scanf("%d", &y);
+            printf("entre la nouvelle note\n");
+            scanf("%f", &ptr->notes[y]);
+        }
+        break;
+    case 5:
+        printf("selectionnez le statut que vous voulez rajouter (ou enlever si il est deja présent)\n1 : inscrit\n2 : en attente\n3 : diplomé\n4 :suspendu\n");
+        scanf("%d", &y);
+        set_bit(&ptr->status, y -1);
+        break;
+    case 6:
+        printf("selctionner les langeus a rajouter ou enlever si elles sont deja présentes\n1 : Anglais\n2 : Francais\n3 : Allemand\n4 : Espagnol\n5 : Italien\n6 : Latin\n7 : grec\n8 : russe\n");
+        scanf("%d", &y);
+        set_bit(&ptr->languages, y -1);
         break;
     }
     time(&ptr->last_modif);
@@ -83,7 +127,7 @@ void affiche_list(etudiant* head) {
 
 etudiant* insert(etudiant* lstptr, int nb) {
     etudiant* ptr = (etudiant*)malloc(sizeof(etudiant));  // Allouer dynamiquement la mémoire pour un nouvel étudiant
-    
+    int yesno;
     if (ptr == NULL) {
         printf("Erreur d'allocation de mémoire.\n");
         return lstptr;  // Retourner la liste inchangée si allocation échoue
@@ -99,7 +143,26 @@ etudiant* insert(etudiant* lstptr, int nb) {
     ptr->ID = nb;
     time(&ptr->date);
     time(&ptr->last_modif);
-
+    printf("Si vous souhaitez entrer des notes pour cet eleve indiquez le nombre de notes que vous voulez ajouter, sinon 0\n");
+    scanf("%d", &yesno);
+    ptr->notesnb = yesno;
+    for(int i = 0 ; i<yesno; i++){
+        printf("entrez une note\n");
+        scanf("%f", &ptr->notes[i]);
+    }
+    ptr->status = 0;
+    printf("quel est le statut de l'étudiant?\n1 : inscrit\n2 : en attente\n3 : diplomé\n4 :suspendu\n0 to pass\n");
+    scanf("%d", &yesno);
+    if (yesno!=0){
+        set_bit(&ptr->status, yesno -1);
+    }
+    ptr->languages = 0;
+    printf("quelles langues sont parlées par l'étudiant? 0 pour passer\n1 : Anglais\n2 : Francais\n3 : Allemand\n4 : Espagnol\n5 : Italien\n6 : Latin\n7 : grec\n8 : russe\n");
+    scanf("%d", &yesno);
+    while (yesno!=0){
+        set_bit(&ptr->languages, yesno -1);
+        scanf("%d", &yesno);
+    }
     ptr->next = lstptr;  // Insérer le nouvel étudiant au début de la liste
     return ptr;  // Retourner le nouvel élément en tête de liste
 }
@@ -185,7 +248,7 @@ int main() {
     char t;
     int s;
     while(y){
-        printf("Menu principal :\nq to quit\na to add a student\nd to display the students list\nm to modify a student\n");
+        printf("\nMenu principal :\nq to quit\na to add a student\nd to display the students list\nm to modify a student\n");
         scanf(" %c",&t);
         switch (t)
         {
@@ -201,7 +264,7 @@ int main() {
             break;
         case 'm':
             affiche_list(ptr);
-            printf("select the student number you wish to modify\n");
+            printf("\nselect the student number you wish to modify\n");
             scanf(" %d",&s);
             ptr2 = ptr;
             ptr2 = select_student(ptr2, s);
